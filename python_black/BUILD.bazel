@@ -4,6 +4,7 @@ exports_files(
     [
         "__main__.py",
         "defs.bzl",
+        "default_config",
     ],
     visibility = [
         "//visibility:public",
@@ -12,13 +13,14 @@ exports_files(
 
 label_flag(
     name = "black.cfg",
-    build_setting_default = "//tools:black.cfg",
+    build_setting_default = "//python_black:default_config",
     visibility = ["//visibility:public"],
 )
 
 label_flag(
     name = "black.exe",
-    build_setting_default = "//tools:black.bin",
+    # This is a garbage value because it's required.
+    build_setting_default = "//python_black:__main__.py",
     visibility = ["//visibility:public"],
 )
 
