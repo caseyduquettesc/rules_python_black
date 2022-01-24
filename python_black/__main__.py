@@ -3,6 +3,7 @@
 import argparse
 import sys
 from os import getenv
+from os.path import dirname, join
 from types import TracebackType
 from typing import Type, TextIO, Optional, cast
 
@@ -10,6 +11,18 @@ from black import nullcontext, patched_main
 
 parser = argparse.ArgumentParser()
 parser.add_argument("--output-file", default=None)
+parser.add_argument("--failure-message", default=None)
+
+class LoadFromFile (argparse.Action):
+    def __call__ (self, parser, namespace, values, option_string = None):
+        # with open(join(dirname(dirname(dirname(dirname(__file__)))), values)) as f:
+        with open(join(dirname(dirname(dirname(__file__))), values)) as f:
+        # with open(join(dirname(__file__), values)) as f:
+            # parse arguments in the file and store them in the target namespace
+            parser.parse_args(f.read().splitlines(), namespace)
+
+# Support passing args through a file so the aspect has access to configuration flags
+parser.add_argument('--argsfile', action=LoadFromFile)
 
 
 class Tee:
@@ -60,7 +73,7 @@ if __name__ == "__main__":
             patched_main()
         except SystemExit as e:
             if e.code == 1:
-                failure_msg = getenv("BLACK_FAILURE_MSG")
+                failure_msg = opts.failure_message
                 if failure_msg:
                     print(f"{'':*^80}", file=sys.stderr)
                     print(

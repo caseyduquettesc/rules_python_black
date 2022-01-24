@@ -21,7 +21,13 @@ def _black_aspect_impl(target, ctx):
             return []
 
         args = ctx.actions.args()
-        args.add_all(["--check", "--output-file", report])
+        args.add_all([
+            "--check",
+            "--output-file",
+            report,
+            "--argsfile",
+            "%s/%s/_black-arguments" % (ctx.workspace_name, ctx.attr._black.label.package),
+        ])
         if config:
             args.add_all(["--config", config])
         for f in files:
@@ -122,10 +128,23 @@ def py_black(name = "black", black_pypi_target = None, failure_message = None, b
     if failure_message == None:
         failure_message = "Format files with: %s run //%s:%s.format" % (bazel_command, package_name, name)
 
+    # Pass args statefully so that when the aspect runs, the options are available
+    write_file(
+        name = name + ".bin-args",
+        out = "_black-arguments",
+        content = [
+            "--failure-message=%s" % failure_message,
+        ],
+        visibility = [
+            "//visibility:public",
+        ],
+    )
+
     native.py_binary(
         name = name + ".bin",
         srcs = [Label("//python_black:__main__.py")],
         main = Label("//python_black:__main__.py"),
+        data = ["_black-arguments"],
         visibility = [
             "//visibility:public",
         ],
@@ -133,9 +152,6 @@ def py_black(name = "black", black_pypi_target = None, failure_message = None, b
             black_pypi_target,
         ],
         python_version = "PY3",
-        env = {
-            "BLACK_FAILURE_MSG": failure_message,
-        },
     )
 
     # Update code format with black
