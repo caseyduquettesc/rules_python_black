@@ -12,7 +12,7 @@ def _black_aspect_impl(target, ctx):
         files = []
         for src in ctx.rule.attr.srcs:
             for f in src.files.to_list():
-                if f.extension == "py":
+                if f.extension == "py" and not f.path.startswith("external/"):
                     files.append(f)
 
         if files:
