@@ -1,6 +1,7 @@
 """Linting code format for Python using Aspects."""
 
 load("@bazel_skylib//rules:write_file.bzl", "write_file")
+load("@bazel_skylib//rules:copy_file.bzl", "copy_file")
 
 # Hacked up from https://github.com/bazelbuild/rules_rust/blob/main/rust/private/clippy.bzl
 
@@ -154,6 +155,12 @@ def py_black(name = "black", black_pypi_target = None, failure_message = None, b
         python_version = "PY3",
     )
 
+    copy_file(
+        name = "config_file",
+        src = Label("//python_black:black.cfg"),
+        out = "internal-black.cfg",
+    )
+
     # Update code format with black
     write_file(
         name = name + ".gen_format",
@@ -166,7 +173,7 @@ def py_black(name = "black", black_pypi_target = None, failure_message = None, b
             "logicalCpuCount=$([ $(uname) = 'Darwin' ] && sysctl -n hw.logicalcpu_max || lscpu -p | egrep -v '^#' | wc -l)",
             # Default excludes: /(\.direnv|\.eggs|\.git|\.hg|\.mypy_cache|\.nox|\.tox|\.venv|venv|\.svn|_build|buck-out|build|dist)/
             # Add the bazel output directories to exclusion
-            "bazel-bin/%s/%s.bin --extend-exclude /bazel-.*/ --workers ${logicalCpuCount:-2} ." % (package_name, name),
+            "bazel-bin/%s/%s.bin --config=bazel-bin/%s/internal-black.cfg --force-exclude /bazel-.*/ --workers ${logicalCpuCount:-2} ." % (package_name, name, package_name),
         ],
         visibility = [
             "//visibility:public",
@@ -176,7 +183,7 @@ def py_black(name = "black", black_pypi_target = None, failure_message = None, b
     native.sh_binary(
         name = name + ".format",
         srcs = ["format.sh"],
-        data = [":%s.bin" % name],
+        data = [":%s.bin" % name, ":config_file"],
         visibility = [
             "//visibility:public",
         ],
