@@ -38,5 +38,8 @@ bzl_library(
     name = "defs",
     srcs = ["defs.bzl"],
     visibility = ["//visibility:public"],
-    deps = ["@bazel_skylib//rules:write_file"],
+    deps = [
+        "@bazel_skylib//rules:copy_file",
+        "@bazel_skylib//rules:write_file",
+    ],
 )
