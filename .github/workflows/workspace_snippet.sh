@@ -16,7 +16,7 @@ http_archive(
     name = "rules_python_black",
     sha256 = "${SHA}",
     strip_prefix = "${PREFIX}",
-    url = "https://github.com/caseyduquettesc/rules_python_black/archive/${TAG}.tar.gz",
+    url = "https://github.com/caseyduquettesc/rules_python_black/archive/refs/tags/${TAG}.tar.gz",
 )
 
 # Fetches the rules_python_black dependencies.
