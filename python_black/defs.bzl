@@ -173,7 +173,7 @@ def py_black(name = "black", black_pypi_target = None, failure_message = None, b
             "logicalCpuCount=$([ $(uname) = 'Darwin' ] && sysctl -n hw.logicalcpu_max || lscpu -p | egrep -v '^#' | wc -l)",
             # Default excludes: /(\.direnv|\.eggs|\.git|\.hg|\.mypy_cache|\.nox|\.tox|\.venv|venv|\.svn|_build|buck-out|build|dist)/
             # Add the bazel output directories to exclusion
-            "bazel-bin/%s/%s.bin --config=bazel-bin/%s/internal-black.cfg --force-exclude /bazel-.*/ --workers ${logicalCpuCount:-2} ." % (package_name, name, package_name),
+            "$1 --config=$2 --force-exclude /bazel-.*/ --workers ${logicalCpuCount:-2} .",
         ],
         visibility = [
             "//visibility:public",
@@ -184,6 +184,7 @@ def py_black(name = "black", black_pypi_target = None, failure_message = None, b
         name = name + ".format",
         srcs = ["format.sh"],
         data = [":%s.bin" % name, ":config_file"],
+        args = ["$(execpath :%s.bin)" % name, "$(execpath :config_file)"],
         visibility = [
             "//visibility:public",
         ],
